@@ -50,6 +50,40 @@ impl From<String> for HttpRequest {
     }
 }
 
+fn process_req_line(req_line: &str) -> (Method, Resource, Version) {
+    // Parse the request line into individual chunks split by white spaces
+    let mut words = req_line.split_whitespace();
+    // Extract request method from first line
+    let method = words.next().unwrap();
+    // Extract resource
+    let resource = words.next().unwrap();
+    // Extract version
+    let version = words.next().unwrap();
+
+    (
+        method.into(),
+        Resource::Path(resource.to_string()),
+        version.into(),
+    )
+}
+
+fn process_header_line(header_line: &str) -> (String, String) {
+    // Parse header line into words split by separator (':')
+    let mut header_items = header_line.split(":");
+    let mut key = String::from("");
+    let mut value = String::from("");
+    // Extract key
+    if let Some(k) = header_items.next() {
+        key = k.to_string();
+    }
+    // Extract value
+    if let Some(v) = header_items.next() {
+        value = v.to_string();
+    }
+
+    (key, value)
+}
+
 #[derive(Debug, PartialEq)]
 pub enum Method {
     Get,
@@ -96,5 +130,20 @@ mod tests {
     fn test_version_into() {
         let http_version: Version = "HTTP/1.1".into();
         assert_eq!(http_version, Version::V1_1);
+    }
+
+    #[test]
+    fn test_read_http() {
+        let s: String = String::from("GET /greeting HTTP/1.1\r\nHost: localhost:3000\r\nUser-Agent: curl/7.71.1\r\nAccept: */*\r\n\r\n");
+        let mut headers_expected = HashMap::new();
+        headers_expected.insert("Host".into(), " localhost".into());
+        headers_expected.insert("Accept".into(), " */*".into());
+        headers_expected.insert("User-Agent".into(), " curl/7.71.1".into());
+        let req: HttpRequest = s.into();
+
+        assert_eq!(Method::Get, req.method);
+        assert_eq!(Version::V1_1, req.version);
+        assert_eq!(Resource::Path("/greeting".to_string()), req.resource);
+        assert_eq!(headers_expected, req.headers);
     }
 }
