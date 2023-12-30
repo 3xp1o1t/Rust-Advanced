@@ -40,6 +40,8 @@ members = ["tcpserver", "tcpclient", "http", "httpserver"]
    1. From<&str> - Habilitar al conversion de un string slice a una estructura HttpRequest.
    2. Debug - Imprimir mensajes de depuración.
    3. PartialEq - Usado para comparar valores como parte del parseo y pruebas automáticas.
+5. La librería Http se puede usar como si fuese un paquete, en el archivo toml de HttpServer se agrego como dependencia.
+   1. http = {path = "../http"} // De esta forma, creamos una referencia a la librería Http en el proyecto HttpServer
 
 ## Como iniciarlo
 
